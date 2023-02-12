@@ -52,6 +52,17 @@ func TestComputeSnippets(t *testing.T) {
 
 	buf.Reset()
 
+	if err := getInstance(buf, tc.ProjectID, zone, instanceName); err != nil {
+		t.Errorf("getInstance got err: %v", err)
+	}
+
+	expectedResult = fmt.Sprintf("Instance: %s", instanceName)
+	if got := buf.String(); !strings.Contains(got, expectedResult) {
+		t.Errorf("getInstance got %q, want %q", got, expectedResult)
+	}
+
+	buf.Reset()
+
 	if err := listInstances(buf, tc.ProjectID, zone); err != nil {
 		t.Errorf("listInstances got err: %v", err)
 	}
@@ -99,6 +110,17 @@ func TestComputeSnippets(t *testing.T) {
 		t.Errorf("createInstance got err: %v", err)
 	}
 
+	buf.Reset()
+
+	if err := changeMachineType(buf, tc.ProjectID, zone, instanceName2, "e2-standard-2"); err != nil {
+		t.Errorf("changeMachineType got err: %v", err)
+	}
+
+	expectedResult = "Instance updated"
+	if got := buf.String(); !strings.Contains(got, expectedResult) {
+		t.Errorf("waitForOperation got %q, want %q", got, expectedResult)
+	}
+
 	ctx := context.Background()
 	instancesClient, err := compute.NewInstancesRESTClient(ctx)
 	if err != nil {
@@ -119,9 +141,7 @@ func TestComputeSnippets(t *testing.T) {
 
 	buf.Reset()
 
-	zoneArr := strings.Split(op.Proto().GetZone(), "/")
-
-	if err := waitForOperation(buf, tc.ProjectID, zoneArr[len(zoneArr)-1], op.Proto().GetName()); err != nil {
+	if err := waitForOperation(buf, tc.ProjectID, op); err != nil {
 		t.Errorf("waitForOperation got err: %v", err)
 	}
 

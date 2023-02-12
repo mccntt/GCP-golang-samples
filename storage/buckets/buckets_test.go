@@ -86,6 +86,35 @@ func TestCreateBucketClassLocation(t *testing.T) {
 	}
 }
 
+func TestCreateBucketDualRegion(t *testing.T) {
+	tc := testutil.SystemTest(t)
+	buf := new(bytes.Buffer)
+	bucketName := testutil.UniqueBucketName(testPrefix)
+	ctx := context.Background()
+
+	defer testutil.DeleteBucketIfExists(ctx, client, bucketName)
+
+	location := "US"
+	region1 := "US-EAST1"
+	region2 := "US-WEST1"
+	if err := createBucketDualRegion(buf, tc.ProjectID, bucketName); err != nil {
+		t.Fatalf("createBucketDualRegion: %v", err)
+	}
+	got := buf.String()
+	if want := bucketName; !strings.Contains(got, want) {
+		t.Errorf("got %q, want %q", got, want)
+	}
+	if want := location; !strings.Contains(got, want) {
+		t.Errorf("got %q, want %q", got, want)
+	}
+	if want := "dual-region"; !strings.Contains(got, want) {
+		t.Errorf("got %q, want %q", got, want)
+	}
+	if want := fmt.Sprintf("%s %s", region1, region2); !strings.Contains(got, want) {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
 func TestStorageClass(t *testing.T) {
 	tc := testutil.SystemTest(t)
 	ctx := context.Background()
@@ -471,18 +500,6 @@ func TestPublicAccessPrevention(t *testing.T) {
 		t.Errorf("getPublicAccessPrevention: got %v, want %v", got, want)
 	}
 
-	if err := setPublicAccessPreventionUnspecified(ioutil.Discard, bucketName); err != nil {
-		t.Errorf("setPublicAccessPreventionUnspecified: %v", err)
-	}
-	// Verify that PublicAccessPrevention was set correctly.
-	attrs, err = client.Bucket(bucketName).Attrs(ctx)
-	if err != nil {
-		t.Fatalf("Bucket(%q).Attrs: %v", bucketName, err)
-	}
-	if attrs.PublicAccessPrevention != storage.PublicAccessPreventionInherited {
-		t.Errorf("PublicAccessPrevention: got %s, want %s", attrs.PublicAccessPrevention, storage.PublicAccessPreventionInherited)
-	}
-
 	if err := setPublicAccessPreventionInherited(ioutil.Discard, bucketName); err != nil {
 		t.Errorf("setPublicAccessPreventionInherited: %v", err)
 	}
@@ -531,9 +548,11 @@ func TestLifecycleManagement(t *testing.T) {
 		t.Fatalf("Unexpected lifecycle rule: got: %v, want: %v", r, want)
 	}
 
-	if err := disableBucketLifecycleManagement(ioutil.Discard, bucketName); err != nil {
-		t.Fatalf("disableBucketLifecycleManagement: %v", err)
-	}
+	testutil.Retry(t, 10, 10*time.Second, func(r *testutil.R) {
+		if err := disableBucketLifecycleManagement(ioutil.Discard, bucketName); err != nil {
+			r.Errorf("disableBucketLifecycleManagement: %v", err)
+		}
+	})
 
 	attrs, err = client.Bucket(bucketName).Attrs(ctx)
 	if err != nil {
@@ -655,5 +674,124 @@ func TestDelete(t *testing.T) {
 
 	if err := deleteBucket(ioutil.Discard, bucketName); err != nil {
 		t.Fatalf("deleteBucket: %v", err)
+	}
+}
+
+// TestRPO tests the following samples:
+// createBucketTurboReplication, setRPODefault, setRPOAsyncTurbo, getRPO
+func TestRPO(t *testing.T) {
+	tc := testutil.SystemTest(t)
+	bucketName := testutil.UniqueBucketName(testPrefix)
+	ctx := context.Background()
+
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		t.Fatalf("storage.NewClient: %v", err)
+	}
+	defer client.Close()
+
+	bucket := client.Bucket(bucketName)
+
+	// Clean up bucket before running the test
+	if err := testutil.DeleteBucketIfExists(ctx, client, bucketName); err != nil {
+		t.Fatalf("Error deleting bucket: %v", err)
+	}
+
+	location := "NAM4" // must be dual-region
+	if err := createBucketTurboReplication(ioutil.Discard, tc.ProjectID, bucketName, location); err != nil {
+		t.Fatalf("createBucketTurboReplication: %v", err)
+	}
+
+	testutil.WaitForBucketToExist(ctx, t, bucket)
+
+	// Verify that RPO was set correctly on creation
+	attrs, err := bucket.Attrs(ctx)
+	if err != nil {
+		t.Fatalf("Bucket(%q).Attrs: %v", bucketName, err)
+	}
+	if attrs.RPO != storage.RPOAsyncTurbo {
+		t.Errorf("createBucketTurboReplication: got %s, want %s", attrs.RPO, storage.RPOAsyncTurbo)
+	}
+
+	// Test disable turbo replication:
+	if err := setRPODefault(ioutil.Discard, bucketName); err != nil {
+		t.Errorf("setRPODefault: %v", err)
+	}
+	// Verify that RPO was set correctly
+	attrs, err = bucket.Attrs(ctx)
+	if err != nil {
+		t.Fatalf("Bucket(%q).Attrs: %v", bucketName, err)
+	}
+	if attrs.RPO != storage.RPODefault {
+		t.Errorf("setRPODefault: got %s, want %s", attrs.RPO, storage.RPODefault)
+	}
+
+	// Test enable turbo replication:
+	if err := setRPOAsyncTurbo(ioutil.Discard, bucketName); err != nil {
+		t.Fatalf("setRPOAsyncTurbo: %v", err)
+	}
+
+	// Verify that RPO was set correctly
+	attrs, err = bucket.Attrs(ctx)
+	if err != nil {
+		t.Fatalf("Bucket(%q).Attrs: %v", bucketName, err)
+	}
+	if attrs.RPO != storage.RPOAsyncTurbo {
+		t.Errorf("setRPOAsyncTurbo: got %s, want %s", attrs.RPO, storage.RPOAsyncTurbo)
+	}
+
+	// Test get turbo replication:
+	buf := new(bytes.Buffer)
+	if err := getRPO(buf, bucketName); err != nil {
+		t.Errorf("getRPO: %v", err)
+	}
+	// Verify that the correct value was printed
+	got := buf.String()
+	want := "RPO is ASYNC_TURBO"
+	if !strings.Contains(got, want) {
+		t.Errorf("getRPO: got %v, want %v", got, want)
+	}
+
+	if err := deleteBucket(ioutil.Discard, bucketName); err != nil {
+		t.Fatalf("deleteBucket: %v", err)
+	}
+}
+
+// TestAutoclass tests the following samples:
+// getAutoclass, setAutoclass
+func TestAutoclass(t *testing.T) {
+	tc := testutil.SystemTest(t)
+	ctx := context.Background()
+
+	bucketName := testutil.UniqueBucketName(testPrefix)
+	defer testutil.DeleteBucketIfExists(ctx, client, bucketName)
+
+	// Test create new bucket with Autoclass enabled.
+	autoclassConfig := &storage.BucketAttrs{
+		Autoclass: &storage.Autoclass{
+			Enabled: true,
+		},
+	}
+	bucket := client.Bucket(bucketName)
+	if err := bucket.Create(ctx, tc.ProjectID, autoclassConfig); err != nil {
+		t.Fatalf("Bucket creation failed: %v", err)
+	}
+
+	// Test get Autoclass config.
+	buf := new(bytes.Buffer)
+	if err := getAutoclass(buf, bucketName); err != nil {
+		t.Errorf("getAutoclass: %#v", err)
+	}
+	if got, want := buf.String(), "Autoclass enabled was set to true"; !strings.Contains(got, want) {
+		t.Errorf("got %q, want %q", got, want)
+	}
+
+	// Test set Autoclass config.
+	value := false
+	if err := setAutoclass(buf, bucketName, value); err != nil {
+		t.Errorf("setAutoclass: %#v", err)
+	}
+	if got, want := buf.String(), "Autoclass enabled was set to false"; !strings.Contains(got, want) {
+		t.Errorf("got %q, want %q", got, want)
 	}
 }

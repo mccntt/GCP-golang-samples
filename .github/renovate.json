@@ -11,17 +11,18 @@
   "commitMessagePrefix": "chore(all): ",
   "commitMessageAction": "update",
   "ignorePaths": [
-    "testing/docker/Dockerfile*"
+    "**/Dockerfile"
   ],
-  "groupName": "all",
+  "groupName": "everything",
   "packageRules": [
     {
-      "updateTypes": ["major"],
+      "updateTypes": [
+        "major"
+      ],
       "enabled": false
     },
     {
       "packageNames": [
-        "golang.org/x/net",
         "golang.org/x/tools",
         "cloud.google.com/go/pubsublite",
         "contrib.go.opencensus.io/exporter/stackdriver"
@@ -31,7 +32,7 @@
   ],
   "force": {
     "constraints": {
-      "go": "1.17"
+      "go": "1.19"
     }
   }
 }

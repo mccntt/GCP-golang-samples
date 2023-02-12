@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -27,13 +28,13 @@ import (
 	"time"
 
 	kms "cloud.google.com/go/kms/apiv1"
+	"cloud.google.com/go/kms/apiv1/kmspb"
 	"cloud.google.com/go/spanner"
 	database "cloud.google.com/go/spanner/admin/database/apiv1"
 	instance "cloud.google.com/go/spanner/admin/instance/apiv1"
 	"github.com/GoogleCloudPlatform/golang-samples/internal/testutil"
 	"github.com/google/uuid"
 	"google.golang.org/api/iterator"
-	kmspb "google.golang.org/genproto/googleapis/cloud/kms/v1"
 	adminpb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 	instancepb "google.golang.org/genproto/googleapis/spanner/admin/instance/v1"
 	"google.golang.org/grpc/codes"
@@ -44,6 +45,7 @@ type sampleFunc func(w io.Writer, dbName string) error
 type sampleFuncWithContext func(ctx context.Context, w io.Writer, dbName string) error
 type instanceSampleFunc func(w io.Writer, projectID, instanceID string) error
 type backupSampleFunc func(ctx context.Context, w io.Writer, dbName, backupID string) error
+type backupSampleFuncWithoutContext func(w io.Writer, dbName, backupID string) error
 type createBackupSampleFunc func(ctx context.Context, w io.Writer, dbName, backupID string, versionTime time.Time) error
 
 var (
@@ -52,7 +54,12 @@ var (
 
 func initTest(t *testing.T, id string) (instName, dbName string, cleanup func()) {
 	projectID := getSampleProjectId(t)
-	instName, cleanup = createTestInstance(t, projectID, "regional-us-central1")
+	configName := getSamplesInstanceConfig()
+	if configName == "" {
+		configName = "regional-us-central1"
+	}
+	log.Printf("Running test by using the instance config: %s\n", configName)
+	instName, cleanup = createTestInstance(t, projectID, configName)
 	dbID := validLength(fmt.Sprintf("smpl-%s", id), t)
 	dbName = fmt.Sprintf("%s/databases/%s", instName, dbID)
 
@@ -120,7 +127,6 @@ func runCreateInstanceSample(t *testing.T, f instanceSampleFunc) {
 }
 
 func TestSample(t *testing.T) {
-	t.Skip("https://github.com/GoogleCloudPlatform/golang-samples/issues/2143")
 	_ = testutil.SystemTest(t)
 	t.Parallel()
 
@@ -156,6 +162,15 @@ func TestSample(t *testing.T) {
 	runSample(t, delete, dbName, "failed to delete data")
 	runSample(t, write, dbName, "failed to insert data")
 	writeTime := time.Now()
+
+	runSample(t, addAndDropDatabaseRole, dbName, "failed to add database role")
+	out = runSample(t, func(w io.Writer, dbName string) error { return readDataWithDatabaseRole(w, dbName, "parent") }, dbName, "failed to read data with database role")
+	assertContains(t, out, "1 1 Total Junk")
+	out = runSample(t, listDatabaseRoles, dbName, "failed to list database roles")
+	assertContains(t, out, "parent")
+	assertContains(t, out, "public")
+	assertContains(t, out, "spanner_info_reader")
+	assertContains(t, out, "spanner_sys_reader")
 
 	out = runSample(t, read, dbName, "failed to read data")
 	assertContains(t, out, "1 1 Total Junk")
@@ -245,6 +260,9 @@ func TestSample(t *testing.T) {
 	out = runSample(t, insertUsingDML, dbName, "failed to insert using DML")
 	assertContains(t, out, "record(s) inserted")
 
+	out = runSample(t, insertUsingDMLReturning, dbName, "failed to insert using DML with returning clause")
+	assertContains(t, out, "record(s) inserted")
+
 	out = runSample(t, insertUsingDMLRequestPriority, dbName, "failed to insert using DML with RequestPriority")
 	assertContains(t, out, "record(s) inserted")
 
@@ -254,7 +272,13 @@ func TestSample(t *testing.T) {
 	out = runSample(t, updateUsingDML, dbName, "failed to update using DML")
 	assertContains(t, out, "record(s) updated")
 
+	out = runSample(t, updateUsingDMLReturning, dbName, "failed to update using DML with returning clause")
+	assertContains(t, out, "record(s) updated")
+
 	out = runSample(t, deleteUsingDML, dbName, "failed to delete using DML")
+	assertContains(t, out, "record(s) deleted")
+
+	out = runSample(t, deleteUsingDMLReturning, dbName, "failed to delete using DML with returning clause")
 	assertContains(t, out, "record(s) deleted")
 
 	out = runSample(t, updateUsingDMLWithTimestamp, dbName, "failed to update using DML with timestamp")
@@ -270,7 +294,7 @@ func TestSample(t *testing.T) {
 	assertContains(t, out, "record(s) inserted")
 
 	out = runSample(t, commitStats, dbName, "failed to request commit stats")
-	assertContains(t, out, "3 mutations in transaction")
+	assertContains(t, out, "4 mutations in transaction")
 
 	out = runSample(t, queryWithParameter, dbName, "failed to query with parameter")
 	assertContains(t, out, "12 Melissa Garcia")
@@ -365,7 +389,7 @@ func TestSample(t *testing.T) {
 }
 
 func TestBackupSample(t *testing.T) {
-	t.Skip("https://github.com/GoogleCloudPlatform/golang-samples/issues/2143")
+	t.Skip("https://github.com/GoogleCloudPlatform/golang-samples/issues/2333")
 	if os.Getenv("GOLANG_SAMPLES_E2E_TEST") == "" {
 		t.Skip("GOLANG_SAMPLES_E2E_TEST not set")
 	}
@@ -396,10 +420,11 @@ func TestBackupSample(t *testing.T) {
 	assertContains(t, out, fmt.Sprintf("/backups/%s", backupID))
 	assertContains(t, out, "Backups listed.")
 
-	out = runSampleWithContext(ctx, t, listBackupOperations, dbName, "failed to list backup operations")
+	out = runBackupSampleWithoutContext(t, listBackupOperations, dbName, backupID, "failed to list backup operations")
 	assertContains(t, out, fmt.Sprintf("on database %s", dbName))
+	assertContains(t, out, fmt.Sprintf("copied from %s", backupID))
 
-	out = runBackupSample(ctx, t, updateBackup, dbName, backupID, "failed to update a backup")
+	out = runBackupSampleWithoutContext(t, updateBackup, dbName, backupID, "failed to update a backup")
 	assertContains(t, out, fmt.Sprintf("Updated backup %s", backupID))
 
 	out = runBackupSampleWithRetry(ctx, t, restoreBackup, restoreDBName, backupID, "failed to restore a backup", 10)
@@ -439,7 +464,7 @@ func TestCustomerManagedEncryptionKeys(t *testing.T) {
 
 	var b bytes.Buffer
 
-	locationId := "us-central1"
+	locationId := "us-west1"
 	keyRingId := "spanner-test-keyring"
 	keyId := "spanner-test-key"
 
@@ -557,6 +582,388 @@ func TestCreateDatabaseWithDefaultLeaderSample(t *testing.T) {
 	assertContains(t, out, "The result of the query to get")
 }
 
+func TestCustomInstanceConfigSample(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	projectID := getSampleProjectId(t)
+	defer cleanupInstanceConfigs(projectID)
+
+	var b bytes.Buffer
+	userConfigID := fmt.Sprintf("custom-golang-samples-config-%v", randomID())
+	if err := createInstanceConfig(&b, projectID, userConfigID, "nam11"); err != nil {
+		t.Fatalf("failed to create instance configuration: %v", err)
+	}
+	out := b.String()
+	assertContains(t, out, "Created instance configuration")
+
+	b.Reset()
+	if err := updateInstanceConfig(&b, projectID, userConfigID); err != nil {
+		t.Errorf("failed to update instance configuration: %v", err)
+	}
+	out = b.String()
+	assertContains(t, out, "Updated instance configuration")
+
+	b.Reset()
+	if err := listInstanceConfigOperations(&b, projectID); err != nil {
+		t.Errorf("failed to list instance configuration operations: %v", err)
+	}
+	out = b.String()
+	assertContains(t, out, "List instance config operations")
+
+	b.Reset()
+	if err := deleteInstanceConfig(&b, projectID, userConfigID); err != nil {
+		t.Errorf("failed to delete instance configuration: %v", err)
+	}
+	out = b.String()
+	assertContains(t, out, "Deleted instance configuration")
+}
+
+func TestPgSample(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	_, dbName, cleanup := initTest(t, randomID())
+	defer cleanup()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
+	defer cancel()
+	out := runSampleWithContext(ctx, t, pgCreateDatabase, dbName, "failed to create a Spanner PG database")
+	assertContains(t, out, fmt.Sprintf("Created Spanner PostgreSQL database [%s]", dbName))
+
+	out = runSampleWithContext(ctx, t, pgAddNewColumn, dbName, "failed to add new column in Spanner PG database")
+	assertContains(t, out, "Added MarketingBudget column")
+
+	runSample(t, write, dbName, "failed to insert data in Spanner PG database")
+	runSample(t, update, dbName, "failed to update data in Spanner PG database")
+
+	runSampleWithContext(ctx, t, pgAddStoringIndex, dbName, "failed to add storing index in Spanner PG database")
+	out = runSample(t, readStoringIndex, dbName, "failed to read storing index in Spanner PG database")
+	assertContains(t, out, "500000")
+
+	out = runSample(t, pgWriteWithTransactionUsingDML, dbName, "failed to write with transaction using DML in Spanner PG database")
+	assertContains(t, out, "Moved 200000 from Album2's MarketingBudget to Album1")
+	out = runSample(t, pgQueryNewColumn, dbName, "failed to query new column in Spanner PG database")
+	assertContains(t, out, "1 1 300000")
+	assertContains(t, out, "2 2 300000")
+
+	client, err := spanner.NewClient(context.Background(), dbName)
+	if err != nil {
+		t.Fatalf("failed to create Spanner client: %v", err)
+	}
+	defer client.Close()
+	_, err = client.Apply(context.Background(), []*spanner.Mutation{
+		spanner.InsertMap("Venues", map[string]interface{}{
+			"VenueId": 4,
+			"Name":    "Venue 4",
+		}),
+		spanner.InsertMap("Venues", map[string]interface{}{
+			"VenueId": 19,
+			"Name":    "Venue 19",
+		}),
+		spanner.InsertMap("Venues", map[string]interface{}{
+			"VenueId": 42,
+			"Name":    "Venue 42",
+		}),
+	})
+	if err != nil {
+		t.Fatalf("failed to insert test records: %v", err)
+	}
+	out = runSample(t, addJsonBColumn, dbName, "failed to add jsonB column")
+	assertContains(t, out, "Added VenueDetails column\n")
+	out = runSample(t, updateDataWithJsonBColumn, dbName, "failed to update data with jsonB")
+	assertContains(t, out, "Updated data to VenueDetails column\n")
+	out = runSample(t, queryWithJsonBParameter, dbName, "failed to query with jsonB parameter")
+	assertContains(t, out, "The venue details for venue id 19")
+}
+
+func TestPgQueryParameter(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	_, dbName, cleanup := initTest(t, randomID())
+	defer cleanup()
+	dbCleanup, err := createTestPgDatabase(
+		dbName,
+		`CREATE TABLE Singers (
+		   SingerId  bigint NOT NULL PRIMARY KEY,
+		   FirstName varchar(1024),
+		   LastName  varchar(1024)
+		 )`)
+	if err != nil {
+		t.Fatalf("failed to create test database: %v", err)
+	}
+	defer dbCleanup()
+
+	client, err := spanner.NewClient(context.Background(), dbName)
+	if err != nil {
+		t.Fatalf("failed to create Spanner client: %v", err)
+	}
+	defer client.Close()
+	_, err = client.Apply(context.Background(), []*spanner.Mutation{
+		spanner.InsertOrUpdateMap("Singers", map[string]interface{}{
+			"SingerId":  1,
+			"FirstName": "Bruce",
+			"LastName":  "Allison",
+		}),
+		spanner.InsertOrUpdateMap("Singers", map[string]interface{}{
+			"SingerId":  2,
+			"FirstName": "Alice",
+			"LastName":  "Bruxelles",
+		}),
+		spanner.InsertOrUpdateMap("Singers", map[string]interface{}{
+			"SingerId":  12,
+			"FirstName": "Melissa",
+			"LastName":  "Garcia",
+		}),
+	})
+	if err != nil {
+		t.Fatalf("failed to insert test records: %v", err)
+	}
+
+	out := runSample(t, pgQueryParameter, dbName, "failed to execute PG query with parameter")
+	assertContains(t, out, "12 Melissa Garcia")
+	assertNotContains(t, out, "2 Alice Bruxelles")
+}
+
+func TestPgDmlSample(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	_, dbName, cleanup := initTest(t, randomID())
+	defer cleanup()
+	dbCleanup, err := createTestPgDatabase(
+		dbName,
+		`CREATE TABLE Singers (
+		   SingerId  bigint NOT NULL PRIMARY KEY,
+		   FirstName varchar(1024),
+		   LastName  varchar(1024),
+		   FullName  varchar(2048)
+		     GENERATED ALWAYS AS (FirstName || ' ' || LastName) STORED
+		 )`,
+		`CREATE TABLE Albums (
+			SingerId         bigint NOT NULL,
+			AlbumId          bigint NOT NULL,
+			AlbumTitle       varchar(1024),
+			MarketingBudget  bigint,
+			PRIMARY KEY (SingerId, AlbumId)
+		) INTERLEAVE IN PARENT Singers ON DELETE CASCADE`)
+	if err != nil {
+		t.Fatalf("failed to create test database: %v", err)
+	}
+	defer dbCleanup()
+
+	out := runSample(t, pgWriteUsingDML, dbName, "failed to execute PG DML")
+	assertContains(t, out, "record(s) inserted")
+
+	out = runSample(t, pgDmlWithParameters, dbName, "failed to execute PG DML with parameter")
+	assertContains(t, out, "Inserted 2 singers")
+
+	out = runSample(t, pgUpdateUsingDMLReturning, dbName, "failed to execute PG DML update with returning clause")
+	assertContains(t, out, "record(s) updated")
+
+	out = runSample(t, pgInsertUsingDMLReturning, dbName, "failed to execute PG DML insert with returning clause")
+	assertContains(t, out, "record(s) inserted")
+
+	out = runSample(t, pgDeleteUsingDMLReturning, dbName, "failed to execute PG DML delete with returning clause")
+	assertContains(t, out, "record(s) deleted")
+}
+
+func TestPgNumericDataType(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	_, dbName, cleanup := initTest(t, randomID())
+	defer cleanup()
+	dbCleanup, err := createTestPgDatabase(dbName)
+	if err != nil {
+		t.Fatalf("failed to create test database: %v", err)
+	}
+	defer dbCleanup()
+
+	out := runSample(t, pgNumericDataType, dbName, "failed to execute PG Numeric sample")
+	assertContains(t, out, "Inserted 1 venue(s)")
+	assertContains(t, out, "Revenues of Venue 1: 3150.25")
+	assertContains(t, out, "Revenues of Venue 2: <null>")
+	assertContains(t, out, "Revenues of Venue 3: NaN")
+	assertContains(t, out, "Inserted 2 Venues using mutations")
+}
+
+func TestPgFunctions(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	_, dbName, cleanup := initTest(t, randomID())
+	defer cleanup()
+	dbCleanup, err := createTestPgDatabase(dbName)
+	if err != nil {
+		t.Fatalf("failed to create test database: %v", err)
+	}
+	defer dbCleanup()
+
+	out := runSample(t, pgFunctions, dbName, "failed to execute PG functions sample")
+	assertContains(t, out, "1284352323 seconds after epoch is 2010-09-13 04:32:03 +0000 UTC")
+}
+
+func TestPgInformationSchema(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	_, dbName, cleanup := initTest(t, randomID())
+	defer cleanup()
+	dbCleanup, err := createTestPgDatabase(dbName)
+	if err != nil {
+		t.Fatalf("failed to create test database: %v", err)
+	}
+	defer dbCleanup()
+
+	out := runSample(t, pgInformationSchema, dbName, "failed to execute PG INFORMATION_SCHEMA sample")
+	assertContains(t, out, "Table: public.venues (User defined type: null)")
+}
+
+func TestPgCastDataType(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	_, dbName, cleanup := initTest(t, randomID())
+	defer cleanup()
+	dbCleanup, err := createTestPgDatabase(dbName)
+	if err != nil {
+		t.Fatalf("failed to create test database: %v", err)
+	}
+	defer dbCleanup()
+
+	out := runSample(t, pgCastDataType, dbName, "failed to execute PG cast data type sample")
+	assertContains(t, out, "String: 1")
+	assertContains(t, out, "Int: 2")
+	assertContains(t, out, "Decimal: 3")
+	assertContains(t, out, "Bytes: 4")
+	assertContains(t, out, "Bool: true")
+	assertContains(t, out, "Timestamp: 2021-11-03 09:35:01 +0000 UTC")
+}
+
+func TestPgInterleavedTable(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	_, dbName, cleanup := initTest(t, randomID())
+	defer cleanup()
+	dbCleanup, err := createTestPgDatabase(dbName)
+	if err != nil {
+		t.Fatalf("failed to create test database: %v", err)
+	}
+	defer dbCleanup()
+
+	out := runSample(t, pgInterleavedTable, dbName, "failed to execute PG interleaved table sample")
+	assertContains(t, out, "Created interleaved table hierarchy using PostgreSQL dialect")
+}
+
+func TestPgBatchDml(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	_, dbName, cleanup := initTest(t, randomID())
+	defer cleanup()
+	dbCleanup, err := createTestPgDatabase(
+		dbName,
+		`CREATE TABLE Singers (
+		   SingerId  bigint NOT NULL PRIMARY KEY,
+		   FirstName varchar(1024),
+		   LastName  varchar(1024)
+		 )`)
+	if err != nil {
+		t.Fatalf("failed to create test database: %v", err)
+	}
+	defer dbCleanup()
+
+	out := runSample(t, pgBatchDml, dbName, "failed to execute PG Batch DML sample")
+	assertContains(t, out, "Inserted [1 1] singers")
+}
+
+func TestPgPartitionedDml(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	_, dbName, cleanup := initTest(t, randomID())
+	defer cleanup()
+	dbCleanup, err := createTestPgDatabase(
+		dbName,
+		`CREATE TABLE users (
+			user_id   bigint NOT NULL PRIMARY KEY,
+			user_name varchar(1024),
+			active    boolean
+		)`)
+	if err != nil {
+		t.Fatalf("failed to create test database: %v", err)
+	}
+	defer dbCleanup()
+
+	client, err := spanner.NewClient(context.Background(), dbName)
+	if err != nil {
+		t.Fatalf("failed to create Spanner client: %v", err)
+	}
+	defer client.Close()
+	_, err = client.Apply(context.Background(), []*spanner.Mutation{
+		spanner.InsertOrUpdateMap("users", map[string]interface{}{
+			"user_id":   1,
+			"user_name": "User 1",
+			"active":    false,
+		}),
+		spanner.InsertOrUpdateMap("users", map[string]interface{}{
+			"user_id":   2,
+			"user_name": "User 2",
+			"active":    false,
+		}),
+		spanner.InsertOrUpdateMap("users", map[string]interface{}{
+			"user_id":   3,
+			"user_name": "User 3",
+			"active":    true,
+		}),
+	})
+	if err != nil {
+		t.Fatalf("failed to insert test records: %v", err)
+	}
+
+	out := runSample(t, pgPartitionedDml, dbName, "failed to execute PG Partitioned DML sample")
+	assertContains(t, out, "Deleted at least 2 inactive users")
+}
+
+func TestPgCaseSensitivity(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	_, dbName, cleanup := initTest(t, randomID())
+	defer cleanup()
+	dbCleanup, err := createTestPgDatabase(dbName)
+	if err != nil {
+		t.Fatalf("failed to create test database: %v", err)
+	}
+	defer dbCleanup()
+
+	out := runSample(t, pgCaseSensitivity, dbName, "failed to execute PG case sensitivity sample")
+	assertContains(t, out, "SingerId: 1, FirstName: Bruce, LastName: Allison")
+	assertContains(t, out, "SingerId: 1, FullName: Bruce Allison")
+}
+
+func TestPgOrderNulls(t *testing.T) {
+	_ = testutil.SystemTest(t)
+	t.Parallel()
+
+	_, dbName, cleanup := initTest(t, randomID())
+	defer cleanup()
+	dbCleanup, err := createTestPgDatabase(dbName)
+	if err != nil {
+		t.Fatalf("failed to create test database: %v", err)
+	}
+	defer dbCleanup()
+
+	out := runSample(t, pgOrderNulls, dbName, "failed to execute PG order nulls sample")
+	assertContains(t, out, "Singers ORDER BY Name\n\tAlice\n\tBruce\n\t<null>")
+	assertContains(t, out, "Singers ORDER BY Name DESC\n\t<null>\n\tBruce\n\tAlice")
+	assertContains(t, out, "Singers ORDER BY Name NULLS FIRST\n\t<null>\n\tAlice\n\tBruce")
+	assertContains(t, out, "Singers ORDER BY Name DESC NULLS LAST\n\tBruce\n\tAlice\n\t<null>")
+}
+
 func maybeCreateKey(projectId, locationId, keyRingId, keyId string) error {
 	client, err := kms.NewKeyManagementClient(context.Background())
 	if err != nil {
@@ -621,6 +1028,14 @@ func runCreateBackupSample(ctx context.Context, t *testing.T, f createBackupSamp
 func runBackupSample(ctx context.Context, t *testing.T, f backupSampleFunc, dbName, backupID, errMsg string) string {
 	var b bytes.Buffer
 	if err := f(ctx, &b, dbName, backupID); err != nil {
+		t.Errorf("%s: %v", errMsg, err)
+	}
+	return b.String()
+}
+
+func runBackupSampleWithoutContext(t *testing.T, f backupSampleFuncWithoutContext, dbName, backupID, errMsg string) string {
+	var b bytes.Buffer
+	if err := f(&b, dbName, backupID); err != nil {
 		t.Errorf("%s: %v", errMsg, err)
 	}
 	return b.String()
@@ -750,6 +1165,56 @@ func createTestInstance(t *testing.T, projectID string, instanceConfigName strin
 	}
 }
 
+func createTestPgDatabase(db string, extraStatements ...string) (func(), error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
+	defer cancel()
+	m := regexp.MustCompile("^(.*)/databases/(.*)$").FindStringSubmatch(db)
+	if m == nil || len(m) != 3 {
+		return func() {}, fmt.Errorf("invalid database id %s", db)
+	}
+
+	client, err := database.NewDatabaseAdminClient(ctx)
+	if err != nil {
+		return func() {}, err
+	}
+	defer client.Close()
+
+	opCreate, err := client.CreateDatabase(ctx, &adminpb.CreateDatabaseRequest{
+		Parent:          m[1],
+		DatabaseDialect: adminpb.DatabaseDialect_POSTGRESQL,
+		CreateStatement: `CREATE DATABASE "` + m[2] + `"`,
+	})
+	if err != nil {
+		return func() {}, err
+	}
+	if _, err := opCreate.Wait(ctx); err != nil {
+		return func() {}, err
+	}
+	dropDb := func() {
+		client, err := database.NewDatabaseAdminClient(ctx)
+		if err != nil {
+			return
+		}
+		defer client.Close()
+		client.DropDatabase(context.Background(), &adminpb.DropDatabaseRequest{
+			Database: db,
+		})
+	}
+	if len(extraStatements) > 0 {
+		opUpdate, err := client.UpdateDatabaseDdl(ctx, &adminpb.UpdateDatabaseDdlRequest{
+			Database:   db,
+			Statements: extraStatements,
+		})
+		if err != nil {
+			return dropDb, err
+		}
+		if err := opUpdate.Wait(ctx); err != nil {
+			return dropDb, err
+		}
+	}
+	return dropDb, nil
+}
+
 func deleteInstanceAndBackups(
 	t *testing.T,
 	instanceName string,
@@ -793,6 +1258,13 @@ func getSampleProjectId(t *testing.T) string {
 	return projectId
 }
 
+// getSamplesInstanceConfig specifies the instance config used to create an instance for testing.
+// It can be changed by setting the environment variable
+// GOLANG_SAMPLES_SPANNER_INSTANCE_CONFIG.
+func getSamplesInstanceConfig() string {
+	return os.Getenv("GOLANG_SAMPLES_SPANNER_INSTANCE_CONFIG")
+}
+
 func assertContains(t *testing.T, out string, sub string) {
 	t.Helper()
 	if !strings.Contains(out, sub) {
@@ -833,6 +1305,32 @@ func cleanupInstanceWithName(instanceName string) error {
 	if err := instanceAdmin.DeleteInstance(ctx, &instancepb.DeleteInstanceRequest{Name: instanceName}); err != nil {
 		return fmt.Errorf("failed to delete instance %s (error %v), might need a manual removal",
 			instanceName, err)
+	}
+	return nil
+}
+
+func cleanupInstanceConfigs(projectID string) error {
+	// Delete all custom instance configurations.
+	ctx := context.Background()
+	instanceAdmin, err := instance.NewInstanceAdminClient(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot create instance admin client: %v", err)
+	}
+	defer instanceAdmin.Close()
+	configIter := instanceAdmin.ListInstanceConfigs(ctx, &instancepb.ListInstanceConfigsRequest{
+		Parent: "projects/" + projectID,
+	})
+	for {
+		resp, err := configIter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		if strings.Contains(resp.Name, "custom-golang-samples") {
+			instanceAdmin.DeleteInstanceConfig(ctx, &instancepb.DeleteInstanceConfigRequest{Name: resp.Name})
+		}
 	}
 	return nil
 }

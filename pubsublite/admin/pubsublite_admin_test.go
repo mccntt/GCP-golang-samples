@@ -25,24 +25,27 @@ import (
 	"testing"
 	"time"
 
+	"cloud.google.com/go/pubsub"
 	"cloud.google.com/go/pubsublite"
 	"github.com/GoogleCloudPlatform/golang-samples/internal/testutil"
 	"github.com/GoogleCloudPlatform/golang-samples/pubsublite/internal/psltest"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	"google.golang.org/api/cloudresourcemanager/v1"
+	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v1"
 )
 
 const (
 	resourcePrefix = "admin-test-"
-	testRegion     = "us-central1"
+	testRegion     = "us-west1"
 )
 
 var (
-	supportedZones = []string{"us-central1-a", "us-central1-b", "us-central1-c"}
+	supportedZones = []string{"us-west1-a", "us-west1-c"}
 
-	once       sync.Once
-	projNumber string
+	once            sync.Once
+	projNumber      string
+	reservationID   string
+	reservationPath string
 )
 
 func setupAdmin(t *testing.T) *pubsublite.AdminClient {
@@ -70,7 +73,7 @@ func setupAdmin(t *testing.T) *pubsublite.AdminClient {
 
 		projNumber = strconv.FormatInt(project.ProjectNumber, 10)
 
-		psltest.Cleanup(t, client, projNumber, resourcePrefix, supportedZones)
+		psltest.Cleanup(t, client, projNumber, testRegion, resourcePrefix, supportedZones)
 	})
 
 	return client
@@ -84,17 +87,24 @@ func TestTopicAdmin(t *testing.T) {
 	testZone := randomZone()
 
 	topicID := resourcePrefix + uuid.NewString()
-	topicPath := fmt.Sprintf("projects/%s/locations/%s/topics/%s", projNumber, testZone, topicID)
 	t.Run("CreateTopic", func(t *testing.T) {
+		ctx := context.Background()
+		reservationID = resourcePrefix + uuid.NewString()
+		reservationPath = fmt.Sprintf("projects/%s/locations/%s/reservations/%s", projNumber, testRegion, reservationID)
+		client.CreateReservation(ctx, pubsublite.ReservationConfig{
+			Name:               reservationPath,
+			ThroughputCapacity: 4,
+		})
+
 		buf := new(bytes.Buffer)
-		err := createTopic(buf, tc.ProjectID, testRegion, testZone, topicID)
+		err := createTopic(buf, tc.ProjectID, testRegion, testZone, topicID, reservationPath)
 		if err != nil {
 			t.Fatalf("createTopic: %v", err)
 		}
 		got := buf.String()
-		want := fmt.Sprintf("Created topic: %s\n", topicPath)
-		if diff := cmp.Diff(want, got); diff != "" {
-			t.Fatalf("createTopic() mismatch: -want, +got:\n%s", diff)
+		want := "Created topic"
+		if !strings.Contains(got, want) {
+			t.Fatalf("createTopic() mismatch: got: %s\nwant: %s", got, want)
 		}
 	})
 
@@ -106,34 +116,24 @@ func TestTopicAdmin(t *testing.T) {
 				r.Errorf("getTopic: %v", err)
 			}
 			got := buf.String()
-			want := fmt.Sprintf("Got topic: %#v\n", *psltest.DefaultTopicConfig(topicPath))
-			if diff := cmp.Diff(want, got); diff != "" {
-				r.Errorf("getTopic() mismatch: -want, +got:\n%s", diff)
+			want := "Got topic"
+			if !strings.Contains(got, want) {
+				r.Errorf("getTopic() mismatch: got: %s\nwant: %s", got, want)
 			}
 		})
 	})
 
 	t.Run("UpdateTopic", func(t *testing.T) {
 		buf := new(bytes.Buffer)
-		err := updateTopic(buf, projNumber, testRegion, testZone, topicID)
+		err := updateTopic(buf, projNumber, testRegion, testZone, topicID, reservationPath)
 		if err != nil {
 			t.Fatalf("updateTopic: %v", err)
 		}
 
 		got := buf.String()
-		// This is hard coded into the pubsublite/update_topic.go sample.
-		// If the sample value changes, this value needs to change as well.
-		wantCfg := &pubsublite.TopicConfig{
-			Name:                       topicPath,
-			PartitionCount:             3,
-			PublishCapacityMiBPerSec:   8,
-			SubscribeCapacityMiBPerSec: 16,
-			PerPartitionBytes:          60 * 1024 * 1024 * 1024,
-			RetentionDuration:          24 * time.Hour,
-		}
-		want := fmt.Sprintf("Updated topic: %#v\n", *wantCfg)
-		if diff := cmp.Diff(want, got); diff != "" {
-			t.Fatalf("updateTopic() mismatch: -want, +got:\n%s", diff)
+		want := "Updated topic"
+		if !strings.Contains(got, want) {
+			t.Fatalf("updateTopic() mismatch: got: %s\nwant: %s", got, want)
 		}
 	})
 
@@ -203,6 +203,21 @@ func TestSubscriptionAdmin(t *testing.T) {
 	subID := resourcePrefix + uuid.NewString()
 	subPath := fmt.Sprintf("projects/%s/locations/%s/subscriptions/%s", projNumber, testZone, subID)
 
+	exportSubID := resourcePrefix + "-export-" + uuid.NewString()
+	exportSubPath := fmt.Sprintf("projects/%s/locations/%s/subscriptions/%s", projNumber, testZone, exportSubID)
+
+	// Destination Pub/Sub topic for testing export subscriptions.
+	pubsubClient, err := pubsub.NewClient(ctx, tc.ProjectID)
+	if err != nil {
+		t.Fatalf("failed to create pubsub client: %v", err)
+	}
+	defer pubsubClient.Close()
+	pubsubTopic, err := pubsubClient.CreateTopic(ctx, topicID)
+	if err != nil {
+		t.Fatalf("CreateTopic: %v", err)
+	}
+	defer pubsubTopic.Delete(ctx)
+
 	t.Run("CreateSubscription", func(t *testing.T) {
 		buf := new(bytes.Buffer)
 		err := createSubscription(buf, tc.ProjectID, testRegion, testZone, topicID, subID)
@@ -213,6 +228,19 @@ func TestSubscriptionAdmin(t *testing.T) {
 		want := fmt.Sprintf("Created subscription: %s\n", subPath)
 		if diff := cmp.Diff(want, got); diff != "" {
 			t.Fatalf("createSubscription() mismatch: -want, +got:\n%s", diff)
+		}
+	})
+
+	t.Run("CreatePubsubExportSubscription", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := createPubsubExportSubscription(buf, tc.ProjectID, testRegion, testZone, topicID, exportSubID, topicID)
+		if err != nil {
+			t.Fatalf("createPubsubExportSubscription: %v", err)
+		}
+		got := buf.String()
+		want := fmt.Sprintf("Created export subscription: %s\n", exportSubPath)
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Fatalf("createPubsubExportSubscription() mismatch: -want, +got:\n%s", diff)
 		}
 	})
 
@@ -277,6 +305,7 @@ func TestSubscriptionAdmin(t *testing.T) {
 		}
 	})
 
+	client.DeleteSubscription(ctx, exportSubPath)
 	client.DeleteTopic(ctx, topicPath)
 }
 
@@ -334,6 +363,106 @@ func TestListSubscriptions(t *testing.T) {
 	client.DeleteTopic(ctx, topicPath)
 	for _, sp := range subPaths {
 		client.DeleteSubscription(ctx, sp)
+	}
+}
+
+func TestReservationsAdmin(t *testing.T) {
+	t.Parallel()
+	client := setupAdmin(t)
+	defer client.Close()
+	tc := testutil.SystemTest(t)
+
+	reservationID := resourcePrefix + uuid.NewString()
+	resPath := fmt.Sprintf("projects/%s/locations/%s/reservations/%s", projNumber, testRegion, reservationID)
+	cap := 4
+	t.Run("CreateReservation", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := createReservation(buf, tc.ProjectID, testRegion, reservationID, cap)
+		if err != nil {
+			t.Fatalf("createReservation: %v", err)
+		}
+
+		got := buf.String()
+		want := "Created reservation"
+		if !strings.Contains(got, want) {
+			t.Fatalf("createReservation() mismatch: got: %s\nwant: %s", got, want)
+		}
+	})
+
+	t.Run("GetReservation", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := getReservation(buf, tc.ProjectID, testRegion, reservationID)
+		if err != nil {
+			t.Fatalf("getReservation: %v", err)
+		}
+
+		got := buf.String()
+		want := fmt.Sprintf("Got reservation: %#v\n", psltest.DefaultResConfig(resPath))
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Fatalf("getReservation() mismatch: -want, +got:\n%s", diff)
+		}
+	})
+
+	t.Run("UpdateReservation", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := updateReservation(buf, tc.ProjectID, testRegion, reservationID, cap)
+		if err != nil {
+			t.Fatalf("updateReservation: %v", err)
+		}
+
+		got := buf.String()
+		want := "Updated reservation"
+		if !strings.Contains(got, want) {
+			t.Fatalf("updateReservation() mismatch: got: %s\nwant: %s", got, want)
+		}
+	})
+
+	t.Run("DeleteReservation", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := deleteReservation(buf, tc.ProjectID, testRegion, reservationID)
+		if err != nil {
+			t.Fatalf("deleteReservation: %v", err)
+		}
+
+		got := buf.String()
+		want := "Deleted reservation"
+		if got != want {
+			t.Fatalf("got: %v, want %v", got, want)
+		}
+	})
+}
+
+func TestListReservations(t *testing.T) {
+	t.Parallel()
+	client := setupAdmin(t)
+	defer client.Close()
+	tc := testutil.SystemTest(t)
+	ctx := context.Background()
+
+	var resPaths []string
+	for i := 0; i < 3; i++ {
+		resID := resourcePrefix + uuid.NewString()
+		resPath := fmt.Sprintf("projects/%s/locations/%s/reservations/%s", projNumber, testRegion, resID)
+		resPaths = append(resPaths, resPath)
+		psltest.MustCreateReservation(ctx, t, client, resPath)
+	}
+
+	testutil.Retry(t, 3, 5*time.Second, func(r *testutil.R) {
+		buf := new(bytes.Buffer)
+		err := listReservations(buf, tc.ProjectID, testRegion)
+		if err != nil {
+			r.Errorf("listReservations got err: %v", err)
+		}
+		got := buf.String()
+		for _, rp := range resPaths {
+			if !strings.Contains(got, rp) {
+				r.Errorf("missing reservation from list: %s", rp)
+			}
+		}
+	})
+
+	for _, rp := range resPaths {
+		client.DeleteReservation(ctx, rp)
 	}
 }
 
