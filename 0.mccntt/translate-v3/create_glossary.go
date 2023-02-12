@@ -129,3 +129,54 @@ func createGlossaryEU(w io.Writer, projectID string, location string, glossaryID
 }
 
 // [END translate_v3_create_glossary]
+
+func createGlossaryCN(w io.Writer, projectID string, location string, glossaryID string, glossaryInputURI string) error {
+	// projectID := "my-project-id"
+	// location := "us-central1"
+	// glossaryID := "my-glossary-display-name"
+	// glossaryInputURI := "gs://cloud-samples-data/translation/glossary.csv"
+
+	ctx := context.Background()
+	client, err := translate.NewTranslationClient(ctx, option.WithEndpoint("translate-cn.googleapis.com:443"))
+
+	if err != nil {
+		return fmt.Errorf("NewTranslationClient: %v", err)
+	}
+	defer client.Close()
+
+	req := &translatepb.CreateGlossaryRequest{
+		Parent: fmt.Sprintf("projects/%s/locations/%s", projectID, location),
+		Glossary: &translatepb.Glossary{
+			Name: fmt.Sprintf("projects/%s/locations/%s/glossaries/%s", projectID, location, glossaryID),
+			Languages: &translatepb.Glossary_LanguageCodesSet_{
+				LanguageCodesSet: &translatepb.Glossary_LanguageCodesSet{
+					LanguageCodes: []string{"zh", "en", "ja", "de"},
+				},
+			},
+			InputConfig: &translatepb.GlossaryInputConfig{
+				Source: &translatepb.GlossaryInputConfig_GcsSource{
+					GcsSource: &translatepb.GcsSource{
+						InputUri: glossaryInputURI,
+					},
+				},
+			},
+		},
+	}
+
+	// The CreateGlossary operation is async.
+	op, err := client.CreateGlossary(ctx, req)
+	if err != nil {
+		return fmt.Errorf("CreateGlossary: %v", err)
+	}
+	fmt.Fprintf(w, "Processing operation name: %q\n", op.Name())
+
+	resp, err := op.Wait(ctx)
+	if err != nil {
+		return fmt.Errorf("Wait: %v", err)
+	}
+
+	fmt.Fprintf(w, "Created: %v\n", resp.GetName())
+	fmt.Fprintf(w, "Input URI: %v\n", resp.InputConfig.GetGcsSource().GetInputUri())
+
+	return nil
+}

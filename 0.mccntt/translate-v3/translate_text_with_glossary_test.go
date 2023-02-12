@@ -87,3 +87,35 @@ func TestTranslateTextWithGlossaryEU(t *testing.T) {
 		t.Errorf("translateTextWithGlossary got:\n----\n%s----\nWant to contain:\n----\n%s\n----\nOR\n----\n%s\n----", got, want1, want2)
 	}
 }
+
+func TestTranslateTextWithGlossaryCN(t *testing.T) {
+	tc := testutil.SystemTest(t)
+
+	location := "global"
+	sourceLang := "zh"
+	targetLang := "ja"
+	text := "你好天气"
+	glossaryID := fmt.Sprintf("translate_text_with_glossary-%v", uuid.New().ID())
+	//glossaryInputURI := "gs://cloud-samples-data/translation/glossary_ja.csv"
+	glossaryInputURI := "gs://testing-translation-v3-glossary/glossary_zh.csv"
+
+	// Create a glossary.
+	var buf bytes.Buffer
+	if err := createGlossaryCN(&buf, tc.ProjectID, location, glossaryID, glossaryInputURI); err != nil {
+		t.Fatalf("createGlossary: %v", err)
+	}
+	defer deleteGlossary(&buf, tc.ProjectID, location, glossaryID)
+
+	start := time.Now()
+	// Translate text.
+	if err := translateTextWithGlossaryCN(&buf, tc.ProjectID, location, sourceLang, targetLang, text, glossaryID); err != nil {
+		t.Fatalf("translateTextWithGlossary: %v", err)
+	}
+	duration := time.Since(start)
+	fmt.Print("duration:")
+	fmt.Println(duration)
+
+	if got, want1, want2 := buf.String(), "アカウント", "口座"; !strings.Contains(got, want1) && !strings.Contains(got, want2) {
+		t.Errorf("translateTextWithGlossary got:\n----\n%s----\nWant to contain:\n----\n%s\n----\nOR\n----\n%s\n----", got, want1, want2)
+	}
+}
