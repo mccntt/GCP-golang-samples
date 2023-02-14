@@ -29,8 +29,8 @@ import (
 	"os"
 	"path/filepath"
 
-	speech "cloud.google.com/go/speech/apiv1"
-	"cloud.google.com/go/speech/apiv1/speechpb"
+	speech "cloud.google.com/go/speech/apiv1p1beta1"
+	"cloud.google.com/go/speech/apiv1p1beta1/speechpb"
 )
 
 func main() {
@@ -55,6 +55,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	// Send the initial configuration message.
 	if err := stream.Send(&speechpb.StreamingRecognizeRequest{
 		StreamingRequest: &speechpb.StreamingRecognizeRequest_StreamingConfig{
@@ -65,7 +66,15 @@ func main() {
 					LanguageCode:    "en-US",
 					Adaptation: &speechpb.SpeechAdaptation{
 						// PhraseSetReferences: []string{"projects/481263715628/locations/global/phraseSets/test-phrase-set-1"},
-						PhraseSetReferences: []string{"projects/716476057399/locations/global/phraseSets/tt-test-1"},
+						// PhraseSetReferences: []string{"projects/716476057399/locations/global/phraseSets/tt-test-1"},
+						PhraseSets: []*speechpb.PhraseSet{
+							{
+								Phrases: []*speechpb.PhraseSet_Phrase{
+									{Value: "Tom", Boost: 10},
+									{Value: "Mary", Boost: 10},
+								},
+							},
+						},
 					},
 				},
 				// InterimResults: true,

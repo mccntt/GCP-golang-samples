@@ -34,7 +34,8 @@ func main() {
 		SampleRateHertz: 44100,
 		LanguageCode:    "en-US",
 		Adaptation: &speechpb.SpeechAdaptation{
-			PhraseSetReferences: []string{"projects/481263715628/locations/global/phraseSets/test-phrase-set-1"},
+			// PhraseSetReferences: []string{"projects/481263715628/locations/global/phraseSets/test-phrase-set-1"},
+			PhraseSetReferences: []string{"projects/716476057399/locations/global/phraseSets/tt-test-1"},
 		},
 	}
 
@@ -52,9 +53,5 @@ func main() {
 	}
 	// Prints the results
 	fmt.Println("hok resp:", resp)
-	for _, result := range resp.Results {
-		for _, alt := range result.Alternatives {
-			fmt.Printf("%v\n", alt.Transcript)
-		}
-	}
+
 }
