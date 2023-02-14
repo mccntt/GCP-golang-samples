@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	speech "cloud.google.com/go/speech/apiv1p1beta1"
-	speechpb "cloud.google.com/go/speech/apiv1p1beta1/speechpb"
+	speech "cloud.google.com/go/speech/apiv1"
+	speechpb "cloud.google.com/go/speech/apiv1/speechpb"
 )
 
 func main() {
@@ -36,14 +36,14 @@ func main() {
 
 	// The path to the remote audio file to transcribe
 	audio := speechpb.RecognitionAudio{
-		AudioSource: &speechpb.RecognitionAudio_Uri{Uri: "gs://gvoice_test/audio-files/20230209_163850.mp3"},
+		AudioSource: &speechpb.RecognitionAudio_Uri{Uri: "gs://mclab2023-speech-to-text/audio-files/tencent_HOK_test_20230209_163850.mp3"},
 	}
 
 	config := speechpb.RecognitionConfig{
-		Encoding:          speechpb.RecognitionConfig_MP3,
+		Encoding:          speechpb.RecognitionConfig_WEBM_OPUS,
 		SampleRateHertz:   48000,
 		AudioChannelCount: 1,
-		LanguageCode:      "zh",
+		LanguageCode:      "en",
 		Model:             "default",
 		// EnableWordTimeOffsets: true,
 		EnableAutomaticPunctuation: true,
