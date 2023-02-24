@@ -65,24 +65,29 @@ func main() {
 					SampleRateHertz: 44100,
 					LanguageCode:    "en-US",
 					Adaptation: &speechpb.SpeechAdaptation{
-						// PhraseSetReferences: []string{"projects/481263715628/locations/global/phraseSets/test-phrase-set-1"},
 						// PhraseSetReferences: []string{"projects/716476057399/locations/global/phraseSets/tt-test-1"},
-						PhraseSets: []*speechpb.PhraseSet{
-							{
-								Phrases: []*speechpb.PhraseSet_Phrase{
-									{Value: "Tom", Boost: 10},
-									{Value: "Mary", Boost: 10},
-								},
-							},
+						PhraseSetReferences: []string{
+							"projects/716476057399/locations/global/phraseSets/EquipmentsEn",
+							"projects/716476057399/locations/global/phraseSets/HeroesEn",
+							"projects/716476057399/locations/global/phraseSets/InscriptionsEn",
 						},
 					},
 				},
-				// InterimResults: true,
+				InterimResults: true,
 			},
 		},
 	}); err != nil {
 		log.Fatal(err)
 	}
+
+	// PhraseSets: []*speechpb.PhraseSet{
+	// 	{
+	// 		Phrases: []*speechpb.PhraseSet_Phrase{
+	// 			{Value: "Tom", Boost: 10},
+	// 			{Value: "Mary", Boost: 10},
+	// 		},
+	// 	},
+	// },
 
 	f, err := os.Open(audioFile)
 	if err != nil {

@@ -26,13 +26,14 @@ func main() {
 	// The path to the remote audio file to transcribe
 	audio := speechpb.RecognitionAudio{
 		// AudioSource: &speechpb.RecognitionAudio_Uri{Uri: "gs://gvoice_test/audio-files/hok.pcm"},
-		AudioSource: &speechpb.RecognitionAudio_Uri{Uri: "gs://stt-model-adaptation-2023/hok.pcm"},
+		AudioSource: &speechpb.RecognitionAudio_Uri{Uri: "gs://stt-model-adaptation-2023/hok_0221.pcm"},
 	}
 
 	config := speechpb.RecognitionConfig{
-		Encoding:        speechpb.RecognitionConfig_LINEAR16,
-		SampleRateHertz: 44100,
-		LanguageCode:    "en-US",
+		Encoding:          speechpb.RecognitionConfig_LINEAR16,
+		SampleRateHertz:   44100,
+		AudioChannelCount: 1,
+		LanguageCode:      "en-US",
 		Adaptation: &speechpb.SpeechAdaptation{
 			// PhraseSetReferences: []string{"projects/481263715628/locations/global/phraseSets/test-phrase-set-1"},
 			PhraseSetReferences: []string{"projects/716476057399/locations/global/phraseSets/tt-test-1"},
@@ -52,6 +53,12 @@ func main() {
 		log.Fatalf("failed to wait for long-running operation: %v", err)
 	}
 	// Prints the results
-	fmt.Println("hok resp:", resp)
+	// fmt.Println("hok resp:", resp)
+
+	for _, result := range resp.Results {
+		for _, alt := range result.Alternatives {
+			fmt.Printf("\"%v\" (confidence=%3f)\n", alt.Transcript, alt.Confidence)
+		}
+	}
 
 }

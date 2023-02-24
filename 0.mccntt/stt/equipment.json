@@ -1,0 +1,386 @@
+{
+  "name": "projects/716476057399/locations/global/phraseSets/EquipmentsEn",
+  "phrases": [
+    {
+      "value": "Iron Sword",
+      "boost": 0
+    },
+    {
+      "value": "Dagger",
+      "boost": 0
+    },
+    {
+      "value": "Pugilist's Fists",
+      "boost": 0
+    },
+    {
+      "value": "Vampiric Scythe",
+      "boost": 0
+    },
+    {
+      "value": "Thunderclap Brand",
+      "boost": 0
+    },
+    {
+      "value": "Raging Claw",
+      "boost": 0
+    },
+    {
+      "value": "Storm Sword",
+      "boost": 0
+    },
+    {
+      "value": "Sunglow Striker",
+      "boost": 0
+    },
+    {
+      "value": "Twinblades of Destruction",
+      "boost": 0
+    },
+    {
+      "value": "Meteor",
+      "boost": 0
+    },
+    {
+      "value": "Runic Blade",
+      "boost": 0
+    },
+    {
+      "value": "Destiny",
+      "boost": 0
+    },
+    {
+      "value": "Frigid Lance",
+      "boost": 0
+    },
+    {
+      "value": "Swiftstrike Lance",
+      "boost": 0
+    },
+    {
+      "value": "Starbreaker",
+      "boost": 0
+    },
+    {
+      "value": "Cloud Piercer",
+      "boost": 0
+    },
+    {
+      "value": "Mortal Punisher",
+      "boost": 0
+    },
+    {
+      "value": "Doomsday",
+      "boost": 0
+    },
+    {
+      "value": "Bloodweeper",
+      "boost": 0
+    },
+    {
+      "value": "Eternity Blade",
+      "boost": 0
+    },
+    {
+      "value": "Master Sword",
+      "boost": 0
+    },
+    {
+      "value": "Sparkforged Dagger",
+      "boost": 0
+    },
+    {
+      "value": "Shadow Ripper",
+      "boost": 0
+    },
+    {
+      "value": "Axe of Torment",
+      "boost": 0
+    },
+    {
+      "value": "Siege Breaker",
+      "boost": 0
+    },
+    {
+      "value": "Sunchaser",
+      "boost": 0
+    },
+    {
+      "value": "Daybreaker",
+      "boost": 0
+    },
+    {
+      "value": "Pure Sky",
+      "boost": 0
+    },
+    {
+      "value": "Spell Tome",
+      "boost": 0
+    },
+    {
+      "value": "Sparkling Sapphire",
+      "boost": 0
+    },
+    {
+      "value": "Alchemist's Amulet",
+      "boost": 0
+    },
+    {
+      "value": "Sage's Codex",
+      "boost": 0
+    },
+    {
+      "value": "Primal Scepter",
+      "boost": 0
+    },
+    {
+      "value": "Grand Staff",
+      "boost": 0
+    },
+    {
+      "value": "Blood Clan's Grimoire",
+      "boost": 0
+    },
+    {
+      "value": "Sword of Glory",
+      "boost": 0
+    },
+    {
+      "value": "Phantom Mask",
+      "boost": 0
+    },
+    {
+      "value": "Evolution Crystals",
+      "boost": 0
+    },
+    {
+      "value": "Ardent Dominator",
+      "boost": 0
+    },
+    {
+      "value": "Shattered Grail",
+      "boost": 0
+    },
+    {
+      "value": "Venomous Staff",
+      "boost": 0
+    },
+    {
+      "value": "Holy Grail",
+      "boost": 0
+    },
+    {
+      "value": "Void Staff",
+      "boost": 0
+    },
+    {
+      "value": "Savant's Wrath",
+      "boost": 0
+    },
+    {
+      "value": "Scepter of Reverberation",
+      "boost": 0
+    },
+    {
+      "value": "Hoarfrost Staff",
+      "boost": 0
+    },
+    {
+      "value": "Mask of Agony",
+      "boost": 0
+    },
+    {
+      "value": "Stave of Sorcery",
+      "boost": 0
+    },
+    {
+      "value": "Augur's Word",
+      "boost": 0
+    },
+    {
+      "value": "Tome of Wisdom",
+      "boost": 0
+    },
+    {
+      "value": "Splendor",
+      "boost": 0
+    },
+    {
+      "value": "Insatiable Tome",
+      "boost": 0
+    },
+    {
+      "value": "Resilient Agate",
+      "boost": 0
+    },
+    {
+      "value": "Cloth Jerkin",
+      "boost": 0
+    },
+    {
+      "value": "Anti-magic Cloak",
+      "boost": 0
+    },
+    {
+      "value": "Revitalizing Crystal",
+      "boost": 0
+    },
+    {
+      "value": "Belt of Might",
+      "boost": 0
+    },
+    {
+      "value": "Energy Core",
+      "boost": 0
+    },
+    {
+      "value": "Clandestine Cape",
+      "boost": 0
+    },
+    {
+      "value": "Frosthold Targe",
+      "boost": 0
+    },
+    {
+      "value": "Protector's Cuirass",
+      "boost": 0
+    },
+    {
+      "value": "Spikemail",
+      "boost": 0
+    },
+    {
+      "value": "Blood Rage",
+      "boost": 0
+    },
+    {
+      "value": "Blazing Cape",
+      "boost": 0
+    },
+    {
+      "value": "Overlord's Platemail",
+      "boost": 0
+    },
+    {
+      "value": "Ominous Premonition",
+      "boost": 0
+    },
+    {
+      "value": "Eye of the Phoenix",
+      "boost": 0
+    },
+    {
+      "value": "Glacial Buckler",
+      "boost": 0
+    },
+    {
+      "value": "Cuirass of Savagery",
+      "boost": 0
+    },
+    {
+      "value": "Frostscar's Embrace",
+      "boost": 0
+    },
+    {
+      "value": "Succubus Cloak",
+      "boost": 0
+    },
+    {
+      "value": "Sage's Sanctuary",
+      "boost": 0
+    },
+    {
+      "value": "Lightfoot Shoes",
+      "boost": 0
+    },
+    {
+      "value": "Boots of Fortitude",
+      "boost": 0
+    },
+    {
+      "value": "Boots of Resistance",
+      "boost": 0
+    },
+    {
+      "value": "Boots of Tranquility",
+      "boost": 0
+    },
+    {
+      "value": "Boots of the Arcane",
+      "boost": 0
+    },
+    {
+      "value": "Boots of Dexterity",
+      "boost": 0
+    },
+    {
+      "value": "Boots of Deftness",
+      "boost": 0
+    },
+    {
+      "value": "Hunting Knife",
+      "boost": 0
+    },
+    {
+      "value": "Guerrilla Machete",
+      "boost": 0
+    },
+    {
+      "value": "Patrol Ax",
+      "boost": 0
+    },
+    {
+      "value": "Relentless Blade",
+      "boost": 0
+    },
+    {
+      "value": "Runeblade",
+      "boost": 0
+    },
+    {
+      "value": "Giant's Grip",
+      "boost": 0
+    },
+    {
+      "value": "Rapacious Bite",
+      "boost": 0
+    },
+    {
+      "value": "Knowledge Gem",
+      "boost": 0
+    },
+    {
+      "value": "Phoenix Ring",
+      "boost": 0
+    },
+    {
+      "value": "Extreme Shadow",
+      "boost": 0
+    },
+    {
+      "value": "Whisper of the Wind",
+      "boost": 0
+    },
+    {
+      "value": "Wings of Redemption",
+      "boost": 0
+    },
+    {
+      "value": "Gale Emblem",
+      "boost": 0
+    },
+    {
+      "value": "Howling Emblem",
+      "boost": 0
+    },
+    {
+      "value": "Guardian's Glory",
+      "boost": 0
+    },
+    {
+      "value": "Shield of Inspiration",
+      "boost": 0
+    }
+  ],
+  "boost": 0
+}

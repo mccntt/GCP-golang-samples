@@ -1,0 +1,641 @@
+{
+  "name": "projects/716476057399/locations/global/phraseSets/test-phrase-set-1",
+  "phrases": [
+    {
+      "value": "Lian Po",
+      "boost": 0
+    },
+    {
+      "value": "Lady Sun",
+      "boost": 0
+    },
+    {
+      "value": "Luban No.7",
+      "boost": 0
+    },
+    {
+      "value": "Lu Bu",
+      "boost": 0
+    },
+    {
+      "value": "Lady Zhen",
+      "boost": 0
+    },
+    {
+      "value": "Cao Cao",
+      "boost": 0
+    },
+    {
+      "value": "Li Bai",
+      "boost": 0
+    },
+    {
+      "value": "Marco Polo",
+      "boost": 0
+    },
+    {
+      "value": "Guan Yu",
+      "boost": 0
+    },
+    {
+      "value": "Daji",
+      "boost": 0
+    },
+    {
+      "value": "Yang Jian",
+      "boost": 0
+    },
+    {
+      "value": "Diaochan",
+      "boost": 0
+    },
+    {
+      "value": "Angela",
+      "boost": 0
+    },
+    {
+      "value": "Luna",
+      "boost": 0
+    },
+    {
+      "value": "Prince of Lanling",
+      "boost": 0
+    },
+    {
+      "value": "Erin",
+      "boost": 0
+    },
+    {
+      "value": "Arthur",
+      "boost": 0
+    },
+    {
+      "value": "Lumburr",
+      "boost": 0
+    },
+    {
+      "value": "Nuwa",
+      "boost": 0
+    },
+    {
+      "value": "Athena",
+      "boost": 0
+    },
+    {
+      "value": "Su Lie",
+      "boost": 0
+    },
+    {
+      "value": "Menki",
+      "boost": 0
+    },
+    {
+      "value": "Biron",
+      "boost": 0
+    },
+    {
+      "value": "Milady",
+      "boost": 0
+    },
+    {
+      "value": "Yaria",
+      "boost": 0
+    },
+    {
+      "value": "Li Xin",
+      "boost": 0
+    },
+    {
+      "value": "Garo",
+      "boost": 0
+    },
+    {
+      "value": "Ata",
+      "boost": 0
+    },
+    {
+      "value": "Luban",
+      "boost": 0
+    },
+    {
+      "value": "Lam",
+      "boost": 0
+    },
+    {
+      "value": "Agudo",
+      "boost": 0
+    },
+    {
+      "value": "Sakeer",
+      "boost": 0
+    },
+    {
+      "value": "Charlotte",
+      "boost": 0
+    },
+    {
+      "value": "Miyamoto Musashi",
+      "boost": 0
+    },
+    {
+      "value": "Mai Shiranui",
+      "boost": 0
+    },
+    {
+      "value": "Nakoruru",
+      "boost": 0
+    },
+    {
+      "value": "Ukyo Tachibana",
+      "boost": 0
+    },
+    {
+      "value": "Yun Ying",
+      "boost": 0
+    },
+    {
+      "value": "Yang Yuhuan",
+      "boost": 0
+    },
+    {
+      "value": "Zhong Wuyan",
+      "boost": 0
+    },
+    {
+      "value": "Sima Yi",
+      "boost": 0
+    },
+    {
+      "value": "Xiahou Dun",
+      "boost": 0
+    },
+    {
+      "value": "Hua Mulan",
+      "boost": 0
+    },
+    {
+      "value": "Zhang Liang",
+      "boost": 0
+    },
+    {
+      "value": "Dian Wei",
+      "boost": 0
+    },
+    {
+      "value": "Zhuangzi",
+      "boost": 0
+    },
+    {
+      "value": "Xiao Qiao",
+      "boost": 0
+    },
+    {
+      "value": "Da Qiao",
+      "boost": 0
+    },
+    {
+      "value": "Zhao Yun",
+      "boost": 0
+    },
+    {
+      "value": "Mozi",
+      "boost": 0
+    },
+    {
+      "value": "Liu Shan",
+      "boost": 0
+    },
+    {
+      "value": "Gao Jianli",
+      "boost": 0
+    },
+    {
+      "value": "Sun Bin",
+      "boost": 0
+    },
+    {
+      "value": "Bian Que",
+      "boost": 0
+    },
+    {
+      "value": "Bai Qi",
+      "boost": 0
+    },
+    {
+      "value": "Mi Yue",
+      "boost": 0
+    },
+    {
+      "value": "Zhou Yu",
+      "boost": 0
+    },
+    {
+      "value": "Yuange",
+      "boost": 0
+    },
+    {
+      "value": "Di Renjie",
+      "boost": 0
+    },
+    {
+      "value": "Xiang Yu",
+      "boost": 0
+    },
+    {
+      "value": "Wu Zetian",
+      "boost": 0
+    },
+    {
+      "value": "Sun Wukong",
+      "boost": 0
+    },
+    {
+      "value": "Han Xin",
+      "boost": 0
+    },
+    {
+      "value": "Zhaojun",
+      "boost": 0
+    },
+    {
+      "value": "Hou Yi",
+      "boost": 0
+    },
+    {
+      "value": "Zhang Fei",
+      "boost": 0
+    },
+    {
+      "value": "Fang",
+      "boost": 0
+    },
+    {
+      "value": "Consort Yu",
+      "boost": 0
+    },
+    {
+      "value": "Kaizer",
+      "boost": 0
+    },
+    {
+      "value": "Zhong Kui",
+      "boost": 0
+    },
+    {
+      "value": "Nezha",
+      "boost": 0
+    },
+    {
+      "value": "Cai Yan",
+      "boost": 0
+    },
+    {
+      "value": "Taiyi Zhenren",
+      "boost": 0
+    },
+    {
+      "value": "Donghuang Taiyi",
+      "boost": 0
+    },
+    {
+      "value": "Guiguzi",
+      "boost": 0
+    },
+    {
+      "value": "Kongming",
+      "boost": 0
+    },
+    {
+      "value": "Pei Qinhu",
+      "boost": 0
+    },
+    {
+      "value": "Huang Zhong",
+      "boost": 0
+    },
+    {
+      "value": "Baili Xuance",
+      "boost": 0
+    },
+    {
+      "value": "Baili Shouyue",
+      "boost": 0
+    },
+    {
+      "value": "Yixing",
+      "boost": 0
+    },
+    {
+      "value": "Gongsun Li",
+      "boost": 0
+    },
+    {
+      "value": "Shen Mengxi",
+      "boost": 0
+    },
+    {
+      "value": "Fuzi",
+      "boost": 0
+    },
+    {
+      "value": "Liu Bang",
+      "boost": 0
+    },
+    {
+      "value": "Yun Zhong Jun",
+      "boost": 0
+    },
+    {
+      "value": "Sun Ce",
+      "boost": 0
+    },
+    {
+      "value": "Shangguan",
+      "boost": 0
+    },
+    {
+      "value": "Ma Chao",
+      "boost": 0
+    },
+    {
+      "value": "Yao",
+      "boost": 0
+    },
+    {
+      "value": "Xi Shi",
+      "boost": 0
+    },
+    {
+      "value": "Meng Ya",
+      "boost": 0
+    },
+    {
+      "value": "Meng Tian",
+      "boost": 0
+    },
+    {
+      "value": "Pangu",
+      "boost": 0
+    },
+    {
+      "value": "Jing",
+      "boost": 0
+    },
+    {
+      "value": "Dun Shan",
+      "boost": 0
+    },
+    {
+      "value": "Sikong Zhen",
+      "boost": 0
+    },
+    {
+      "value": "Musashi",
+      "boost": 0
+    },
+    {
+      "value": "Mai",
+      "boost": 0
+    },
+    {
+      "value": "Ukyo",
+      "boost": 0
+    },
+    {
+      "value": "Ying",
+      "boost": 0
+    },
+    {
+      "value": "Yuhuan",
+      "boost": 0
+    },
+    {
+      "value": "Wuyan",
+      "boost": 0
+    },
+    {
+      "value": "Sima",
+      "boost": 0
+    },
+    {
+      "value": "Dun",
+      "boost": 0
+    },
+    {
+      "value": "Mulan",
+      "boost": 0
+    },
+    {
+      "value": "Wordsmith",
+      "boost": 0
+    },
+    {
+      "value": "Berserker",
+      "boost": 0
+    },
+    {
+      "value": "Dreambuilder",
+      "boost": 0
+    },
+    {
+      "value": "Breezy",
+      "boost": 0
+    },
+    {
+      "value": "Stormy",
+      "boost": 0
+    },
+    {
+      "value": "Zilong",
+      "boost": 0
+    },
+    {
+      "value": "Peacekeeper",
+      "boost": 0
+    },
+    {
+      "value": "Mischief",
+      "boost": 0
+    },
+    {
+      "value": "Guitarist",
+      "boost": 0
+    },
+    {
+      "value": "Timebender",
+      "boost": 0
+    },
+    {
+      "value": "Chemist",
+      "boost": 0
+    },
+    {
+      "value": "Red Reaper",
+      "boost": 0
+    },
+    {
+      "value": "Raveness",
+      "boost": 0
+    },
+    {
+      "value": "Fireraiser",
+      "boost": 0
+    },
+    {
+      "value": "Puppeteer",
+      "boost": 0
+    },
+    {
+      "value": "Judge Dee",
+      "boost": 0
+    },
+    {
+      "value": "Hegemon",
+      "boost": 0
+    },
+    {
+      "value": "Empress",
+      "boost": 0
+    },
+    {
+      "value": "Monkey King",
+      "boost": 0
+    },
+    {
+      "value": "Conspirator",
+      "boost": 0
+    },
+    {
+      "value": "Frost",
+      "boost": 0
+    },
+    {
+      "value": "Solarus",
+      "boost": 0
+    },
+    {
+      "value": "Beast",
+      "boost": 0
+    },
+    {
+      "value": "Private Ear",
+      "boost": 0
+    },
+    {
+      "value": "Juniper",
+      "boost": 0
+    },
+    {
+      "value": "Kai",
+      "boost": 0
+    },
+    {
+      "value": "Voidcaller",
+      "boost": 0
+    },
+    {
+      "value": "Fire Wheels",
+      "boost": 0
+    },
+    {
+      "value": "Little Lute",
+      "boost": 0
+    },
+    {
+      "value": "Alchemist",
+      "boost": 0
+    },
+    {
+      "value": "Eclipse",
+      "boost": 0
+    },
+    {
+      "value": "Spiritcaller",
+      "boost": 0
+    },
+    {
+      "value": "Tigerous",
+      "boost": 0
+    },
+    {
+      "value": "Blaid",
+      "boost": 0
+    },
+    {
+      "value": "Gunnar",
+      "boost": 0
+    },
+    {
+      "value": "Go Master",
+      "boost": 0
+    },
+    {
+      "value": "Arli",
+      "boost": 0
+    },
+    {
+      "value": "Katboom",
+      "boost": 0
+    },
+    {
+      "value": "Eternal Sage",
+      "boost": 0
+    },
+    {
+      "value": "Renegade",
+      "boost": 0
+    },
+    {
+      "value": "Blind Wing",
+      "boost": 0
+    },
+    {
+      "value": "Seafarer",
+      "boost": 0
+    },
+    {
+      "value": "Calligrapher",
+      "boost": 0
+    },
+    {
+      "value": "Moon Maiden",
+      "boost": 0
+    },
+    {
+      "value": "Lance Master",
+      "boost": 0
+    },
+    {
+      "value": "Novar",
+      "boost": 0
+    },
+    {
+      "value": "Shye",
+      "boost": 0
+    },
+    {
+      "value": "Cannon Boy",
+      "boost": 0
+    },
+    {
+      "value": "Grand Marshal",
+      "boost": 0
+    },
+    {
+      "value": "Dawnbreaker",
+      "boost": 0
+    },
+    {
+      "value": "Mirrorblade",
+      "boost": 0
+    },
+    {
+      "value": "Shieldun",
+      "boost": 0
+    },
+    {
+      "value": "Bolt Baron",
+      "boost": 0
+    }
+  ]
+}

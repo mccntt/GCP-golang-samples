@@ -1,0 +1,398 @@
+{
+  "name": "projects/716476057399/locations/global/phraseSets/InscriptionsEn",
+  "phrases": [
+    {
+      "value": "Arcana",
+      "boost": 0
+    },
+    {
+      "value": "Bulwark",
+      "boost": 0
+    },
+    {
+      "value": "Inheritance",
+      "boost": 0
+    },
+    {
+      "value": "Reaver",
+      "boost": 0
+    },
+    {
+      "value": "Prosperity",
+      "boost": 0
+    },
+    {
+      "value": "Conflict",
+      "boost": 0
+    },
+    {
+      "value": "Red Moon",
+      "boost": 0
+    },
+    {
+      "value": "Reverberation",
+      "boost": 0
+    },
+    {
+      "value": "Calamity",
+      "boost": 0
+    },
+    {
+      "value": "Reverence",
+      "boost": 0
+    },
+    {
+      "value": "Fortify",
+      "boost": 0
+    },
+    {
+      "value": "Compassion",
+      "boost": 0
+    },
+    {
+      "value": "Cognizance",
+      "boost": 0
+    },
+    {
+      "value": "Reincarnation",
+      "boost": 0
+    },
+    {
+      "value": "Nightmare",
+      "boost": 0
+    },
+    {
+      "value": "Meditation",
+      "boost": 0
+    },
+    {
+      "value": "Saint",
+      "boost": 0
+    },
+    {
+      "value": "Hunt",
+      "boost": 0
+    },
+    {
+      "value": "Beast Scar",
+      "boost": 0
+    },
+    {
+      "value": "Avarice",
+      "boost": 0
+    },
+    {
+      "value": "Harmony",
+      "boost": 0
+    },
+    {
+      "value": "Unparalleled",
+      "boost": 0
+    },
+    {
+      "value": "Tribute",
+      "boost": 0
+    },
+    {
+      "value": "Mind's Eye",
+      "boost": 0
+    },
+    {
+      "value": "Omen",
+      "boost": 0
+    },
+    {
+      "value": "Fate",
+      "boost": 0
+    },
+    {
+      "value": "Vacuity",
+      "boost": 0
+    },
+    {
+      "value": "Mutation",
+      "boost": 0
+    },
+    {
+      "value": "Stealth",
+      "boost": 0
+    },
+    {
+      "value": "Eagle Eye",
+      "boost": 0
+    },
+    {
+      "value": "Longevity",
+      "boost": 0
+    },
+    {
+      "value": "Mourning",
+      "boost": 0
+    },
+    {
+      "value": "Assassination",
+      "boost": 0
+    },
+    {
+      "value": "Conceit",
+      "boost": 0
+    },
+    {
+      "value": "White Night",
+      "boost": 0
+    },
+    {
+      "value": "Rampage",
+      "boost": 0
+    },
+    {
+      "value": "Last Stand",
+      "boost": 0
+    },
+    {
+      "value": "Deluge",
+      "boost": 0
+    },
+    {
+      "value": "Flux",
+      "boost": 0
+    },
+    {
+      "value": "Endure",
+      "boost": 0
+    },
+    {
+      "value": "Extraordinary",
+      "boost": 0
+    },
+    {
+      "value": "Assault",
+      "boost": 0
+    },
+    {
+      "value": "Catalyst",
+      "boost": 0
+    },
+    {
+      "value": "Wither",
+      "boost": 0
+    },
+    {
+      "value": "Corrupt",
+      "boost": 0
+    },
+    {
+      "value": "Vengeance",
+      "boost": 0
+    },
+    {
+      "value": "Origin",
+      "boost": 0
+    },
+    {
+      "value": "Resonate",
+      "boost": 0
+    },
+    {
+      "value": "Arclight",
+      "boost": 0
+    },
+    {
+      "value": "Aegis",
+      "boost": 0
+    },
+    {
+      "value": "Vision",
+      "boost": 0
+    },
+    {
+      "value": "Savvy",
+      "boost": 0
+    },
+    {
+      "value": "Agitate",
+      "boost": 0
+    },
+    {
+      "value": "Torrent",
+      "boost": 0
+    },
+    {
+      "value": "Hurry",
+      "boost": 0
+    },
+    {
+      "value": "Parasite",
+      "boost": 0
+    },
+    {
+      "value": "Enchant",
+      "boost": 0
+    },
+    {
+      "value": "Almighty",
+      "boost": 0
+    },
+    {
+      "value": "Evolve",
+      "boost": 0
+    },
+    {
+      "value": "Taboo",
+      "boost": 0
+    },
+    {
+      "value": "Vigil",
+      "boost": 0
+    },
+    {
+      "value": "Purification",
+      "boost": 0
+    },
+    {
+      "value": "Snipe",
+      "boost": 0
+    },
+    {
+      "value": "Hysteria",
+      "boost": 0
+    },
+    {
+      "value": "Inspire",
+      "boost": 0
+    },
+    {
+      "value": "Comprehend",
+      "boost": 0
+    },
+    {
+      "value": "Flurry",
+      "boost": 0
+    },
+    {
+      "value": "Pillage",
+      "boost": 0
+    },
+    {
+      "value": "Mist Veil",
+      "boost": 0
+    },
+    {
+      "value": "Bloodthirst",
+      "boost": 0
+    },
+    {
+      "value": "Defend",
+      "boost": 0
+    },
+    {
+      "value": "Flicker",
+      "boost": 0
+    },
+    {
+      "value": "Adamant",
+      "boost": 0
+    },
+    {
+      "value": "Pestilence",
+      "boost": 0
+    },
+    {
+      "value": "Heart Fire",
+      "boost": 0
+    },
+    {
+      "value": "Courier",
+      "boost": 0
+    },
+    {
+      "value": "Blood Hex",
+      "boost": 0
+    },
+    {
+      "value": "Admonition",
+      "boost": 0
+    },
+    {
+      "value": "Ambition",
+      "boost": 0
+    },
+    {
+      "value": "Heresy",
+      "boost": 0
+    },
+    {
+      "value": "Tenacity",
+      "boost": 0
+    },
+    {
+      "value": "Blaze",
+      "boost": 0
+    },
+    {
+      "value": "Abyss",
+      "boost": 0
+    },
+    {
+      "value": "Vigor",
+      "boost": 0
+    },
+    {
+      "value": "Rebirth",
+      "boost": 0
+    },
+    {
+      "value": "Entreaty",
+      "boost": 0
+    },
+    {
+      "value": "Terminate",
+      "boost": 0
+    },
+    {
+      "value": "Reminisce",
+      "boost": 0
+    },
+    {
+      "value": "Critical Rate",
+      "boost": 0
+    },
+    {
+      "value": "Roar",
+      "boost": 0
+    },
+    {
+      "value": "Miracle",
+      "boost": 0
+    },
+    {
+      "value": "Liquidate",
+      "boost": 0
+    },
+    {
+      "value": "Cage",
+      "boost": 0
+    },
+    {
+      "value": "Resistance",
+      "boost": 0
+    },
+    {
+      "value": "Eclipse",
+      "boost": 0
+    },
+    {
+      "value": "Castigate",
+      "boost": 0
+    },
+    {
+      "value": "Sublimate",
+      "boost": 0
+    },
+    {
+      "value": "Vitality",
+      "boost": 0
+    }
+  ],
+  "boost": 0
+}
