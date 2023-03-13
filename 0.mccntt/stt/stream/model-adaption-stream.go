@@ -63,7 +63,7 @@ func main() {
 				Config: &speechpb.RecognitionConfig{
 					Encoding:        speechpb.RecognitionConfig_LINEAR16,
 					SampleRateHertz: 44100,
-					LanguageCode:    "en-US",
+					LanguageCode:    "pt-PT",
 					Adaptation: &speechpb.SpeechAdaptation{
 						// PhraseSetReferences: []string{"projects/716476057399/locations/global/phraseSets/tt-test-1"},
 						PhraseSetReferences: []string{
@@ -73,7 +73,7 @@ func main() {
 						},
 					},
 				},
-				InterimResults: true,
+				// InterimResults: true,
 			},
 		},
 	}); err != nil {
